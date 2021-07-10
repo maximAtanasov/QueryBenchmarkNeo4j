@@ -1,0 +1,4 @@
+package org.atanasov.benchmark.patternmatch.varlength.generated;
+public class VariableLengthPathBenchmarkNoIndex_jmhType extends VariableLengthPathBenchmarkNoIndex_jmhType_B3 {
+}
+
