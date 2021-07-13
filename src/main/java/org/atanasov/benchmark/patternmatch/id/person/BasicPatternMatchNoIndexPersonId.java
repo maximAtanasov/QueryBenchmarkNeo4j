@@ -23,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Measurement(iterations = 10)
 public class BasicPatternMatchNoIndexPersonId {
 
-    private final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
+    private final Driver driver = GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
     private long[] personIds;
 
     private final Random r = new Random();

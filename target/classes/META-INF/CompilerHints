@@ -3,7 +3,6 @@ dontinline,*.*_avgt_jmhStub
 dontinline,*.*_sample_jmhStub
 dontinline,*.*_ss_jmhStub
 dontinline,*.*_thrpt_jmhStub
-inline,org/atanasov/benchmark/patternmatch/varlength/VariableLengthPathBenchmarkNoIndex.prepare
-inline,org/atanasov/benchmark/patternmatch/varlength/VariableLengthPathBenchmarkNoIndex.variableLengthAPOC
-inline,org/atanasov/benchmark/patternmatch/varlength/VariableLengthPathBenchmarkNoIndex.variableLengthOptionalQuery
-inline,org/atanasov/benchmark/patternmatch/varlength/VariableLengthPathBenchmarkNoIndex.variableLengthQuery
+inline,org/atanasov/benchmark/patternmatch/multipleedge/MultipleEdgeMatchNoIndex.pathQuery1
+inline,org/atanasov/benchmark/patternmatch/multipleedge/MultipleEdgeMatchNoIndex.pathQuery2
+inline,org/atanasov/benchmark/patternmatch/multipleedge/MultipleEdgeMatchNoIndex.prepare

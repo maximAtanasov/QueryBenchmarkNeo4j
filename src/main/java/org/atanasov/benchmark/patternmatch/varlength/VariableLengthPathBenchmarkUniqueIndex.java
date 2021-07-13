@@ -28,21 +28,6 @@ public class VariableLengthPathBenchmarkUniqueIndex {
     private long[] personIds;
     private final Random r = new Random();
 
-    private static final String QUERY_VAR_PATH = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 MATCH (p)-[:KNOWS*1..3]->(p2:Person) RETURN DISTINCT p2";
-    private static final String QUERY_OPTIONAL_PATH = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 " +
-            "MATCH (p)-[:KNOWS]->(p2:Person) WITH DISTINCT p2 " +
-            "OPTIONAL MATCH (p2)-[:KNOWS]->(p3:Person) WITH DISTINCT collect(p2) as p2, p3 " +
-            "OPTIONAL MATCH (p3)-[:KNOWS]->(p4:Person) WITH p2 + collect(p3) + collect(DISTINCT p4) as result " +
-            "UNWIND result as p " +
-            "RETURN DISTINCT p";
-    private static final String QUERY_APOC = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 " +
-            "CALL apoc.path.subgraphNodes(p, { " +
-            "relationshipFilter: \"KNOWS>\"," +
-            "    minLevel: 1, " +
-            "    maxLevel: 3 " +
-            "}) YIELD node RETURN node";
-
-
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
                 .include(VariableLengthPathBenchmarkUniqueIndex.class.getSimpleName())
@@ -74,7 +59,7 @@ public class VariableLengthPathBenchmarkUniqueIndex {
             transaction = driver.session().beginTransaction();
             long personId = personIds[r.nextInt(personIds.length)];
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + QUERY_VAR_PATH,
+                    "PROFILE " + VariableLengthQueries.QUERY_VAR_PATH,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personId))
                     .consume().profile());
             transaction.commit();
@@ -88,7 +73,7 @@ public class VariableLengthPathBenchmarkUniqueIndex {
             transaction = driver.session().beginTransaction();
             long personId = personIds[r.nextInt(personIds.length)];
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + QUERY_OPTIONAL_PATH,
+                    "PROFILE " + VariableLengthQueries.QUERY_OPTIONAL_PATH,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personId))
                     .consume().profile());
             transaction.commit();
@@ -102,7 +87,7 @@ public class VariableLengthPathBenchmarkUniqueIndex {
             transaction = driver.session().beginTransaction();
             long personId = personIds[r.nextInt(personIds.length)];
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + QUERY_APOC,
+                    "PROFILE " + VariableLengthQueries.QUERY_APOC,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personId))
                     .consume().profile());
             transaction.commit();
@@ -122,7 +107,7 @@ public class VariableLengthPathBenchmarkUniqueIndex {
     @Benchmark
     public void variableLengthQuery() {
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(QUERY_VAR_PATH,
+            var result = transaction.run(VariableLengthQueries.QUERY_VAR_PATH,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
             return result.list();
         });
@@ -131,7 +116,7 @@ public class VariableLengthPathBenchmarkUniqueIndex {
     @Benchmark
     public void variableLengthOptionalQuery() {
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(QUERY_OPTIONAL_PATH,
+            var result = transaction.run(VariableLengthQueries.QUERY_OPTIONAL_PATH,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
             return result.list();
         });
@@ -140,7 +125,7 @@ public class VariableLengthPathBenchmarkUniqueIndex {
     @Benchmark
     public void variableLengthAPOC() {
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(QUERY_APOC,
+            var result = transaction.run(VariableLengthQueries.QUERY_APOC,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
             return result.list();
         });
