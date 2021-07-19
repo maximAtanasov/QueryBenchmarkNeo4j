@@ -2,14 +2,7 @@
 # Created by https://www.gitignore.io/api/java,macos,linux,gradle,eclipse,windows,intellij,visualstudiocode
 # Edit at https://www.gitignore.io/?templates=java,macos,linux,gradle,eclipse,windows,intellij,visualstudiocode
 
-### coderadar ###
-
-coderadar-app/src/main/resources/application.properties
-coderadar-app/coderadar-workdir/
-coderadar-test/coderadar-workdir/
-coderadar-test/src/test/resources/test-clone
-coderadar-ui/node_modules
-coderadar-ui/dist
+target/
 
 ### Eclipse ###
 
