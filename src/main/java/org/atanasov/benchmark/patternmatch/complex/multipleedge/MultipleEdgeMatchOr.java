@@ -1,11 +1,9 @@
 package org.atanasov.benchmark.patternmatch.complex.multipleedge;
 
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.Queries;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
-import org.neo4j.driver.Transaction;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -37,7 +35,7 @@ public class MultipleEdgeMatchOr {
     @Benchmark
     public void query6() {
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_6);
+            var result = transaction.run(Queries.QUERY_9);
             return result.list();
         });
     }
@@ -45,7 +43,7 @@ public class MultipleEdgeMatchOr {
     @Benchmark
     public void query7() {
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_7);
+            var result = transaction.run(Queries.QUERY_10);
             return result.list();
         });
     }

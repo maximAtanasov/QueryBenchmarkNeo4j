@@ -60,7 +60,7 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonId {
             transaction = driver.session().beginTransaction();
             long personId = personIds[r.nextInt(personIds.length)];
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_13,
+                    "PROFILE " + Queries.QUERY_16,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personId))
                     .consume().profile());
             transaction.commit();
@@ -80,7 +80,7 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonId {
     @Benchmark
     public void query13IndexPersonId() {
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_13,
+            var result = transaction.run(Queries.QUERY_16,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
             return result.consume();
         });

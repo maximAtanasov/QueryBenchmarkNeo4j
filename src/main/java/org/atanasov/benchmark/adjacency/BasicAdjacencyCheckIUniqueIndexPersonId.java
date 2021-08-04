@@ -1,4 +1,4 @@
-package org.atanasov.benchmark.patternmatch.complex.multiplepattern;
+package org.atanasov.benchmark.adjacency;
 
 import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
@@ -12,7 +12,8 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
-import java.util.Collections;
+import java.util.HashMap;
+import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
@@ -22,7 +23,7 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucene {
+public class BasicAdjacencyCheckIUniqueIndexPersonId {
 
     private final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
 
@@ -31,7 +32,7 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucen
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucene.class.getSimpleName())
+                .include(BasicAdjacencyCheckIUniqueIndexPersonId.class.getSimpleName())
                 .forks(1)
                 .build();
 
@@ -45,13 +46,8 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucen
         transaction.commit();
         transaction.close();
 
-        transaction = driver.session().beginTransaction();
-        transaction.run("CREATE INDEX message_content FOR (m:Message) ON (m.content) OPTIONS {indexProvider: 'lucene+native-3.0'}").consume();
-        transaction.commit();
-        transaction.close();
-
-        //Wait 180 secs for the indices to populate
-        Thread.sleep(180000);
+        //Wait 10 secs for the index to populate
+        Thread.sleep(10000);
 
         transaction = driver.session().beginTransaction();
         personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
@@ -63,15 +59,31 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucen
         long dbHits = 0;
         for(var i = 0; i < 100; i++) {
             transaction = driver.session().beginTransaction();
-            long personId = personIds[r.nextInt(personIds.length)];
+            long personId1 = personIds[r.nextInt(personIds.length)];
+            long personId2 = personIds[r.nextInt(personIds.length)];
+            Map<String, Object> params = new HashMap<>();
+            params.put(ParameterConstants.PERSON_ID_1, personId1);
+            params.put(ParameterConstants.PERSON_ID_2, personId2);
+
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_16,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personId))
+                    "PROFILE " + Queries.QUERY_17, params)
                     .consume().profile());
             transaction.commit();
             transaction.close();
         }
         System.out.println("\nDBHITS: " + dbHits/100);
+    }
+
+    @Benchmark
+    public void query16UniqueConstraint() {
+        Map<String, Object> params = new HashMap<>();
+        params.put(ParameterConstants.PERSON_ID_1, personIds[r.nextInt(personIds.length)]);
+        params.put(ParameterConstants.PERSON_ID_2, personIds[r.nextInt(personIds.length)]);
+
+        driver.session().readTransaction(transaction -> {
+            var result = transaction.run(Queries.QUERY_17, params);
+            return result.single();
+        });
     }
 
     @TearDown(Level.Trial)
@@ -80,20 +92,5 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucen
         transaction.run("DROP CONSTRAINT person_id").consume();
         transaction.commit();
         transaction.close();
-
-
-        transaction = driver.session().beginTransaction();
-        transaction.run("DROP INDEX message_content").consume();
-        transaction.commit();
-        transaction.close();
-    }
-
-    @Benchmark
-    public void query13IndexPersonIdMessageContentLucene() {
-        driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_16,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
-            return result.consume();
-        });
     }
 }
