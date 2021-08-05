@@ -1,5 +1,6 @@
 package org.atanasov.benchmark.reachability.varlength;
 
+import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.neo4j.driver.AuthTokens;
@@ -15,18 +16,17 @@ import java.util.Collections;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.logging.Level.INFO;
+
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class VariableLengthPathBenchmarkIndex {
-
-    private final Driver driver= GraphDatabase.driver("bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ));
+public class VariableLengthPathBenchmarkIndex extends BenchmarkTemplate {
 
     private long[] personIds;
-    private final Random r = new Random();
 
     private static final String QUERY_VAR_PATH = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 MATCH (p)-[:KNOWS*1..3]->(p2:Person) RETURN DISTINCT p2";
     private static final String QUERY_OPTIONAL_PATH = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 " +
@@ -81,7 +81,7 @@ public class VariableLengthPathBenchmarkIndex {
             transaction.commit();
             transaction.close();
         }
-        System.out.println("\nDBHITS: " + dbHits/100);
+        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
 
         //Optional query
         dbHits = 0;

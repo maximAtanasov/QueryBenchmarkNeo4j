@@ -1,11 +1,13 @@
 package org.atanasov.benchmark.adjacency;
 
+import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
+import org.neo4j.driver.internal.shaded.io.netty.util.internal.logging.Log4J2LoggerFactory;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -16,6 +18,9 @@ import java.util.HashMap;
 import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.*;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -23,11 +28,7 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicAdjacencyCheckIndexPersonId {
-
-    private final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
-
-    private final Random r = new Random();
+public class BasicAdjacencyCheckIndexPersonId extends BenchmarkTemplate {
     private long[] personIds;
 
     public static void main(String[] args) throws RunnerException {
@@ -71,7 +72,7 @@ public class BasicAdjacencyCheckIndexPersonId {
             transaction.commit();
             transaction.close();
         }
-        System.out.println("\nDBHITS: " + dbHits/100);
+        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
     }
 
     @Benchmark

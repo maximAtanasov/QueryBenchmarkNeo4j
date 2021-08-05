@@ -1,11 +1,9 @@
 package org.atanasov.benchmark.adjacency;
 
+import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -13,9 +11,12 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.HashMap;
-import java.util.Random;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
+import java.util.logging.Logger;
+
+import static java.util.logging.Level.ALL;
+import static java.util.logging.Level.INFO;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -23,11 +24,8 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicAdjacencyCheckNoIndexPersonId {
+public class BasicAdjacencyCheckNoIndexPersonId extends BenchmarkTemplate {
 
-    private final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
-
-    private final Random r = new Random();
     private long[] personIds;
 
     public static void main(String[] args) throws RunnerException {
@@ -42,8 +40,6 @@ public class BasicAdjacencyCheckNoIndexPersonId {
     @Setup(Level.Trial)
     public void prepare() throws InterruptedException {
         var transaction = driver.session().beginTransaction();
-
-        transaction = driver.session().beginTransaction();
         personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
                 .stream().mapToLong(value -> value.get("personId").asLong()).toArray();
         transaction.commit();
@@ -65,7 +61,7 @@ public class BasicAdjacencyCheckNoIndexPersonId {
             transaction.commit();
             transaction.close();
         }
-        System.out.println("\nDBHITS: " + dbHits/100);
+        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
     }
 
     @Benchmark

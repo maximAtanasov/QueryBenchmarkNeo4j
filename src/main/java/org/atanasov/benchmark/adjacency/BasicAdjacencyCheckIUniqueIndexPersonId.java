@@ -1,5 +1,6 @@
 package org.atanasov.benchmark.adjacency;
 
+import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
@@ -17,17 +18,16 @@ import java.util.Map;
 import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
+import static java.util.logging.Level.INFO;
+
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicAdjacencyCheckIUniqueIndexPersonId {
+public class BasicAdjacencyCheckIUniqueIndexPersonId extends BenchmarkTemplate {
 
-    private final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
-
-    private final Random r = new Random();
     private long[] personIds;
 
     public static void main(String[] args) throws RunnerException {
@@ -71,7 +71,7 @@ public class BasicAdjacencyCheckIUniqueIndexPersonId {
             transaction.commit();
             transaction.close();
         }
-        System.out.println("\nDBHITS: " + dbHits/100);
+        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
     }
 
     @Benchmark

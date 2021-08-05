@@ -1,5 +1,6 @@
 package org.atanasov.benchmark.patternmatch.basic.edgeproperty.query4;
 
+import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
 import org.neo4j.driver.AuthTokens;
@@ -21,13 +22,7 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicPatternMatchEdgeIndexClassYear {
-
-    private final Driver driver = GraphDatabase.driver( "bolt://localhost", AuthTokens.basic(
-           "neo4j", "neo3j"
-    ) );
-
-    private final Random r = new Random();
+public class BasicPatternMatchEdgeIndexClassYear extends BenchmarkTemplate {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
