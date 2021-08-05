@@ -3,9 +3,6 @@ package org.atanasov.benchmark.patternmatch.basic.edgeproperty.query4;
 import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -13,7 +10,6 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Collections;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
 @BenchmarkMode(Mode.AverageTime)
@@ -33,11 +29,7 @@ public class BasicPatternMatchEdgeNoIndexClassYear extends BenchmarkTemplate {
         new Runner(opt).run();
     }
 
-    @Setup(Level.Trial)
-    public void prepare() {
-        //Avg db hits: 1106843 - calculated manually is Neo4jBrowser and incrementing classYear from 1990 to 2020 in intervals of 5
-    }
-
+    //Avg db hits: 1106843 - calculated manually is Neo4jBrowser and incrementing classYear from 1990 to 2020 in intervals of 5
     @Benchmark
     public void query4() {
         driver.session().readTransaction(transaction -> {

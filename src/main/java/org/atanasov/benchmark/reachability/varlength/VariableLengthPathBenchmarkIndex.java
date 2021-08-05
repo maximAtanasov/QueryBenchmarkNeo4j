@@ -54,14 +54,13 @@ public class VariableLengthPathBenchmarkIndex extends BenchmarkTemplate {
     }
 
     @Setup(Level.Trial)
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         var transaction = driver.session().beginTransaction();
         transaction.run("CREATE INDEX person_id FOR (p:Person) ON (p.id)").consume();
         transaction.commit();
         transaction.close();
 
-        //Wait 10 secs for the index to populate
-        Thread.sleep(10000);
+        awaitIndexes();
 
         transaction = driver.session().beginTransaction();
         personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")

@@ -39,7 +39,7 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucen
     }
 
     @Setup(Level.Trial)
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         var transaction = driver.session().beginTransaction();
         transaction.run("CREATE CONSTRAINT person_id ON (p:Person) ASSERT p.id IS UNIQUE").consume();
         transaction.commit();
@@ -50,8 +50,7 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentLucen
         transaction.commit();
         transaction.close();
 
-        //Wait 180 secs for the indices to populate
-        Thread.sleep(180000);
+        awaitIndexes();
 
         transaction = driver.session().beginTransaction();
         personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")

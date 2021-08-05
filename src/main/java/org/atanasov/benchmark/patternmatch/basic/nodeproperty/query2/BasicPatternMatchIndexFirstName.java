@@ -39,14 +39,13 @@ public class BasicPatternMatchIndexFirstName extends BenchmarkTemplate {
     }
 
     @Setup(Level.Trial)
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         var transaction = driver.session().beginTransaction();
         transaction.run("CREATE INDEX person_first_name FOR (p:Person) ON (p.firstName)").consume();
         transaction.commit();
         transaction.close();
 
-        //Wait 10 secs for the index to populate
-        Thread.sleep(10000);
+        awaitIndexes();
 
         transaction = driver.session().beginTransaction();
         firstNames = transaction.run("MATCH (p:Person) RETURN p.firstName as firstName")

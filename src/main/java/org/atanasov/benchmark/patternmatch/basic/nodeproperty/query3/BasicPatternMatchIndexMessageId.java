@@ -39,14 +39,13 @@ public class BasicPatternMatchIndexMessageId extends BenchmarkTemplate {
     }
 
     @Setup(Level.Trial)
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         var transaction = driver.session().beginTransaction();
         transaction.run("CREATE INDEX message_id FOR (m:Message) ON (m.id)").consume();
         transaction.commit();
         transaction.close();
 
-        //Wait 60 secs for the index to populate
-        Thread.sleep(60000);
+        awaitIndexes();
 
         transaction = driver.session().beginTransaction();
         messageIds = transaction.run("MATCH (m:Message) RETURN m.id as messageId")

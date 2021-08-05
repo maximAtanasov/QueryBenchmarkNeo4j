@@ -1,6 +1,5 @@
 package org.atanasov.benchmark;
 
-import org.atanasov.benchmark.adjacency.BasicAdjacencyCheckIndexPersonId;
 import org.neo4j.driver.AuthTokens;
 import org.neo4j.driver.Driver;
 import org.neo4j.driver.GraphDatabase;
@@ -13,5 +12,12 @@ public class BenchmarkTemplate {
 
     protected final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
     protected final Random r = new Random();
+
+    protected void awaitIndexes() {
+        var transaction = driver.session().beginTransaction();
+        transaction.run("CALL db.awaitIndexes(1000)").consume();
+        transaction.commit();
+        transaction.close();
+    }
 
 }

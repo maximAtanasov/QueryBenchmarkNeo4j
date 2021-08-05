@@ -38,7 +38,7 @@ public class BasicAdjacencyCheckNoIndexPersonId extends BenchmarkTemplate {
     }
 
     @Setup(Level.Trial)
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         var transaction = driver.session().beginTransaction();
         personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
                 .stream().mapToLong(value -> value.get("personId").asLong()).toArray();

@@ -34,14 +34,13 @@ public class BasicPatternMatchEdgeIndexClassYear extends BenchmarkTemplate {
     }
 
     @Setup(Level.Trial)
-    public void prepare() throws InterruptedException {
+    public void prepare() {
         var transaction = driver.session().beginTransaction();
         transaction.run("CREATE INDEX study_at_class_year FOR ()-[r:STUDY_AT]-() ON (r.classYear)").consume();
         transaction.commit();
         transaction.close();
 
-        //Wait 10 secs for the index to populate
-        Thread.sleep(10000);
+        awaitIndexes();
 
         //Avg db hits: 348449 - calculated manually is Neo4jBrowser and incrementing classYear from 1990 to 2020 in intervals of 5
     }
