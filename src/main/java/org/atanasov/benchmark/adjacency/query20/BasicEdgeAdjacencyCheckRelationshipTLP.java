@@ -1,4 +1,4 @@
-package org.atanasov.benchmark.adjacency;
+package org.atanasov.benchmark.adjacency.query20;
 
 import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.BenchmarkUtil;
@@ -10,27 +10,29 @@ import org.openjdk.jmh.runner.RunnerException;
 import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
+import java.time.ZonedDateTime;
+import java.util.ArrayList;
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
-import java.util.logging.Logger;
+import java.util.stream.Collectors;
 
-import static java.util.logging.Level.ALL;
 import static java.util.logging.Level.INFO;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
 @State(Scope.Benchmark)
-@Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
+@Fork(value = 1, jvmArgs = {"-Xms8G", "-Xmx8G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicAdjacencyCheckNoIndexPersonId extends BenchmarkTemplate {
+public class BasicEdgeAdjacencyCheckRelationshipTLP extends BenchmarkTemplate {
 
-    private long[] personIds;
+    private List<ZonedDateTime> dates;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(BasicAdjacencyCheckNoIndexPersonId.class.getSimpleName())
+                .include(BasicEdgeAdjacencyCheckRelationshipTLP.class.getSimpleName())
                 .forks(1)
                 .build();
 
@@ -40,38 +42,41 @@ public class BasicAdjacencyCheckNoIndexPersonId extends BenchmarkTemplate {
     @Setup(Level.Trial)
     public void prepare() {
         var transaction = driver.session().beginTransaction();
-        personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
-                .stream().mapToLong(value -> value.get("personId").asLong()).toArray();
+        dates = transaction.run("MATCH ()-[r:LIKES]-() RETURN r.creationDate as creationDate")
+                .stream().map(value -> value.get("creationDate").asZonedDateTime()).collect(Collectors.toList());
         transaction.commit();
         transaction.close();
 
+        //Use an array list to ensure access time with get() is constant
+        dates = new ArrayList<>(dates);
+
         //Calculate DB Hits avg
         long dbHits = 0;
-        for(var i = 0; i < 100; i++) {
+        for(var i = 0; i < 10; i++) {
             transaction = driver.session().beginTransaction();
-            long personId1 = personIds[r.nextInt(personIds.length)];
-            long personId2 = personIds[r.nextInt(personIds.length)];
+            ZonedDateTime date1 = dates.get(r.nextInt(dates.size()));
+            ZonedDateTime date2 = dates.get(r.nextInt(dates.size()));
             Map<String, Object> params = new HashMap<>();
-            params.put(ParameterConstants.PERSON_ID_1, personId1);
-            params.put(ParameterConstants.PERSON_ID_2, personId2);
+            params.put(ParameterConstants.DATE_1, date1);
+            params.put(ParameterConstants.DATE_2, date2);
 
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_17, params)
+                    "PROFILE " + Queries.QUERY_20_2, params)
                     .consume().profile());
             transaction.commit();
             transaction.close();
         }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
+        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/10);
     }
 
     @Benchmark
-    public void query16Index() {
+    public void query20Tlp() {
         Map<String, Object> params = new HashMap<>();
-        params.put(ParameterConstants.PERSON_ID_1, personIds[r.nextInt(personIds.length)]);
-        params.put(ParameterConstants.PERSON_ID_2, personIds[r.nextInt(personIds.length)]);
+        params.put(ParameterConstants.DATE_1, dates.get(r.nextInt(dates.size())));
+        params.put(ParameterConstants.DATE_2, dates.get(r.nextInt(dates.size())));
 
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_17, params);
+            var result = transaction.run(Queries.QUERY_20_2, params);
             return result.single();
         });
     }

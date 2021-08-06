@@ -9,4 +9,7 @@ public class ParameterConstants {
     public static final String MESSAGE_ID = "messageId";
     public static final String CLASS_YEAR = "classYear";
     public static final String FIRST_NAME = "firstName";
+    public static final String DATE_1 = "date1";
+    public static final String DATE_2 = "date2";
+    public static final String MAX_DATE = "maxDate";
 }

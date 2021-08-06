@@ -1,12 +1,9 @@
-package org.atanasov.benchmark.adjacency;
+package org.atanasov.benchmark.adjacency.query19;
 
 import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -15,10 +12,9 @@ import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.HashMap;
 import java.util.Map;
-import java.util.Random;
 import java.util.concurrent.TimeUnit;
 
-import static java.util.logging.Level.INFO;
+import static java.util.logging.Level.*;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
@@ -26,13 +22,12 @@ import static java.util.logging.Level.INFO;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicAdjacencyCheckIUniqueIndexPersonId extends BenchmarkTemplate {
-
+public class BasicNodeAdjacencyCheckIndexPersonId extends BenchmarkTemplate {
     private long[] personIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(BasicAdjacencyCheckIUniqueIndexPersonId.class.getSimpleName())
+                .include(BasicNodeAdjacencyCheckIndexPersonId.class.getSimpleName())
                 .forks(1)
                 .build();
 
@@ -42,7 +37,7 @@ public class BasicAdjacencyCheckIUniqueIndexPersonId extends BenchmarkTemplate {
     @Setup(Level.Trial)
     public void prepare() {
         var transaction = driver.session().beginTransaction();
-        transaction.run("CREATE CONSTRAINT person_id ON (p:Person) ASSERT p.id IS UNIQUE").consume();
+        transaction.run("CREATE INDEX person_id FOR (p:Person) ON (p.id)").consume();
         transaction.commit();
         transaction.close();
 
@@ -65,7 +60,7 @@ public class BasicAdjacencyCheckIUniqueIndexPersonId extends BenchmarkTemplate {
             params.put(ParameterConstants.PERSON_ID_2, personId2);
 
             dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_17, params)
+                    "PROFILE " + Queries.QUERY_19, params)
                     .consume().profile());
             transaction.commit();
             transaction.close();
@@ -74,13 +69,13 @@ public class BasicAdjacencyCheckIUniqueIndexPersonId extends BenchmarkTemplate {
     }
 
     @Benchmark
-    public void query16UniqueConstraint() {
+    public void query20Index() {
         Map<String, Object> params = new HashMap<>();
         params.put(ParameterConstants.PERSON_ID_1, personIds[r.nextInt(personIds.length)]);
         params.put(ParameterConstants.PERSON_ID_2, personIds[r.nextInt(personIds.length)]);
 
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_17, params);
+            var result = transaction.run(Queries.QUERY_19, params);
             return result.single();
         });
     }
@@ -88,7 +83,7 @@ public class BasicAdjacencyCheckIUniqueIndexPersonId extends BenchmarkTemplate {
     @TearDown(Level.Trial)
     public void tearDown() {
         var transaction = driver.session().beginTransaction();
-        transaction.run("DROP CONSTRAINT person_id").consume();
+        transaction.run("DROP INDEX person_id").consume();
         transaction.commit();
         transaction.close();
     }
