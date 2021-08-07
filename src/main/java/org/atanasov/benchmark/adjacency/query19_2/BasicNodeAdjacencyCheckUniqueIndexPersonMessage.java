@@ -1,7 +1,7 @@
 package org.atanasov.benchmark.adjacency.query19_2;
 
+import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
 import org.openjdk.jmh.annotations.*;
@@ -11,6 +11,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.HashMap;
+import java.util.List;
 import java.util.Map;
 import java.util.concurrent.TimeUnit;
 
@@ -24,8 +25,8 @@ import static java.util.logging.Level.INFO;
 @Measurement(iterations = 10)
 public class BasicNodeAdjacencyCheckUniqueIndexPersonMessage extends BenchmarkTemplate {
 
-    private long[] personIds;
-    private long[] messageIds;
+    private List<Long> personIds;
+    private List<Long> messageIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -48,44 +49,23 @@ public class BasicNodeAdjacencyCheckUniqueIndexPersonMessage extends BenchmarkTe
         transaction.commit();
         transaction.close();
 
-        transaction = driver.session().beginTransaction();
-        personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
-                .stream().mapToLong(value -> value.get("personId").asLong()).toArray();
-        transaction.commit();
-        transaction.close();
-
-        transaction = driver.session().beginTransaction();
-        messageIds = transaction.run("MATCH (m:Message) RETURN m.id as messageId")
-                .stream().mapToLong(value -> value.get("messageId").asLong()).toArray();
-        transaction.commit();
-        transaction.close();
+        personIds = getPersonIds();
+        messageIds = getMessageIds();
 
         awaitIndexes();
 
         //Calculate DB Hits avg
-        long dbHits = 0;
-        for(var i = 0; i < 100; i++) {
-            transaction = driver.session().beginTransaction();
-            long personId = personIds[r.nextInt(personIds.length)];
-            long messageId = messageIds[r.nextInt(messageIds.length)];
-            Map<String, Object> params = new HashMap<>();
-            params.put(ParameterConstants.PERSON_ID, personId);
-            params.put(ParameterConstants.MESSAGE_ID, messageId);
-
-            dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_19_3, params)
-                    .consume().profile());
-            transaction.commit();
-            transaction.close();
-        }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
+        LOGGER.log(INFO, "DBHITS: {0}",
+                profileDbHits(Queries.QUERY_19_2, 100,
+                        new Pair<>(ParameterConstants.PERSON_ID, personIds),
+                        new Pair<>(ParameterConstants.MESSAGE_ID, messageIds)));
     }
 
     @Benchmark
     public void query19_2IndexPersonAndMessage() {
         Map<String, Object> params = new HashMap<>();
-        params.put(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]);
-        params.put(ParameterConstants.MESSAGE_ID, messageIds[r.nextInt(messageIds.length)]);
+        params.put(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size())));
+        params.put(ParameterConstants.MESSAGE_ID, messageIds.get(r.nextInt(messageIds.size())));
 
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_19_3, params);

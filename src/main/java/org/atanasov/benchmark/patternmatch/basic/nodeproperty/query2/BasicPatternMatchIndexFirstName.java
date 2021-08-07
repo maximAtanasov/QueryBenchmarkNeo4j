@@ -1,12 +1,9 @@
 package org.atanasov.benchmark.patternmatch.basic.nodeproperty.query2;
 
+import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -14,8 +11,9 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Collections;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
+import java.util.stream.Collectors;
 
 import static java.util.logging.Level.INFO;
 
@@ -27,7 +25,7 @@ import static java.util.logging.Level.INFO;
 @Measurement(iterations = 10)
 public class BasicPatternMatchIndexFirstName extends BenchmarkTemplate {
 
-    private String[] firstNames;
+    private List<String> firstNames;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -45,27 +43,18 @@ public class BasicPatternMatchIndexFirstName extends BenchmarkTemplate {
         transaction.commit();
         transaction.close();
 
-        awaitIndexes();
-
         transaction = driver.session().beginTransaction();
         firstNames = transaction.run("MATCH (p:Person) RETURN p.firstName as firstName")
-                .stream().map(value -> value.get("firstName").asString()).toArray(String[]::new);
+                .stream().map(value -> value.get("firstName").asString()).collect(Collectors.toList());
         transaction.commit();
         transaction.close();
 
+        awaitIndexes();
+
         //Calculate DB Hits avg
-        long dbHits = 0;
-        for(var i = 0; i < 100; i++) {
-            transaction = driver.session().beginTransaction();
-            String firstName = firstNames[r.nextInt(firstNames.length)];
-            dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_2,
-                    Collections.singletonMap(ParameterConstants.FIRST_NAME, firstName))
-                    .consume().profile());
-            transaction.commit();
-            transaction.close();
-        }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
+        LOGGER.log(INFO, "DBHITS: {0}",
+                profileDbHits(Queries.QUERY_2, 100,
+                        new Pair<>(ParameterConstants.FIRST_NAME, firstNames)));
     }
 
     @TearDown(Level.Trial)
@@ -80,7 +69,7 @@ public class BasicPatternMatchIndexFirstName extends BenchmarkTemplate {
     public void query2Index() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_2,
-                    Collections.singletonMap(ParameterConstants.FIRST_NAME, firstNames[r.nextInt(firstNames.length)]));
+                    Collections.singletonMap(ParameterConstants.FIRST_NAME, firstNames.get(r.nextInt(firstNames.size()))));
             return result.list();
         });
     }

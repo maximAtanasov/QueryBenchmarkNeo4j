@@ -53,4 +53,6 @@ public class Queries {
             "friend.lastName AS lastName, " +
             "r.creationDate AS friendshipCreationDate " +
             "ORDER BY friendshipCreationDate DESC, personId ASC";
+
+    public static final String QUERY_28 = "MATCH (p1:Person {id: $personId})-[:KNOWS*4..7]->(p2:Person) RETURN DISTINCT p2";
 }

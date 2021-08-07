@@ -1,12 +1,9 @@
 package org.atanasov.benchmark.patternmatch.basic.nodeproperty.query3;
 
+import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -14,7 +11,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Collections;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.logging.Level.INFO;
@@ -27,7 +24,7 @@ import static java.util.logging.Level.INFO;
 @Measurement(iterations = 10)
 public class BasicPatternMatchUniqueIndexMessageId extends BenchmarkTemplate {
 
-    private long[] messageIds;
+    private List<Long> messageIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -45,26 +42,14 @@ public class BasicPatternMatchUniqueIndexMessageId extends BenchmarkTemplate {
         transaction.commit();
         transaction.close();
 
+        messageIds = getMessageIds();
+
         awaitIndexes();
 
-        transaction = driver.session().beginTransaction();
-        messageIds = transaction.run("MATCH (m:Message) RETURN m.id as messageId")
-                .stream().mapToLong(value -> value.get("messageId").asLong()).toArray();
-        transaction.commit();
-        transaction.close();
-
         //Calculate DB Hits avg
-        long dbHits = 0;
-        for(var i = 0; i < 100; i++) {
-            transaction = driver.session().beginTransaction();
-            long messageId = messageIds[r.nextInt(messageIds.length)];
-            dbHits += BenchmarkUtil.sumDbHits(transaction.run("PROFILE " + Queries.QUERY_3,
-                    Collections.singletonMap(ParameterConstants.MESSAGE_ID, messageId))
-                    .consume().profile());
-            transaction.commit();
-            transaction.close();
-        }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
+        LOGGER.log(INFO, "DBHITS: {0}",
+                profileDbHits(Queries.QUERY_3, 100,
+                        new Pair<>(ParameterConstants.MESSAGE_ID, messageIds)));
     }
 
     @TearDown(Level.Trial)
@@ -79,7 +64,7 @@ public class BasicPatternMatchUniqueIndexMessageId extends BenchmarkTemplate {
     public void query3UniqueConstraint() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_3,
-                    Collections.singletonMap(ParameterConstants.MESSAGE_ID, messageIds[r.nextInt(messageIds.length)]));
+                    Collections.singletonMap(ParameterConstants.MESSAGE_ID, messageIds.get(r.nextInt(messageIds.size()))));
             return result.single();
         });
     }

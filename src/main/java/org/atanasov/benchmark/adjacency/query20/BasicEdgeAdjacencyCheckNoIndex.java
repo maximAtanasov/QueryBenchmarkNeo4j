@@ -1,7 +1,7 @@
 package org.atanasov.benchmark.adjacency.query20;
 
+import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
 import org.openjdk.jmh.annotations.*;
@@ -51,21 +51,10 @@ public class BasicEdgeAdjacencyCheckNoIndex extends BenchmarkTemplate {
         dates = new ArrayList<>(dates);
 
         //Calculate DB Hits avg
-        long dbHits = 0;
-        for(var i = 0; i < 10; i++) {
-            transaction = driver.session().beginTransaction();
-            ZonedDateTime date1 = dates.get(r.nextInt(dates.size()));
-            ZonedDateTime date2 = dates.get(r.nextInt(dates.size()));
-            Map<String, Object> params = new HashMap<>();
-            params.put(ParameterConstants.DATE_1, date1);
-            params.put(ParameterConstants.DATE_2, date2);
-
-            dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_20, params).consume().profile());
-            transaction.commit();
-            transaction.close();
-        }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/10);
+        LOGGER.log(INFO, "DBHITS: {0}",
+                profileDbHits(Queries.QUERY_20, 100,
+                        new Pair<>(ParameterConstants.DATE_1, dates),
+                        new Pair<>(ParameterConstants.DATE_2, dates)));
     }
 
     @Benchmark

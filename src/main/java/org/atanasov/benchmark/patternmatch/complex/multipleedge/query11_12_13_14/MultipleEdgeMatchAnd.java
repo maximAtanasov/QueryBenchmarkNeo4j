@@ -1,4 +1,4 @@
-package org.atanasov.benchmark.patternmatch.complex.multipleedge;
+package org.atanasov.benchmark.patternmatch.complex.multipleedge.query11_12_13_14;
 
 import org.atanasov.benchmark.Queries;
 import org.neo4j.driver.AuthTokens;

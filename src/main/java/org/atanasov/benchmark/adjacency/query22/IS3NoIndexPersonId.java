@@ -1,7 +1,7 @@
 package org.atanasov.benchmark.adjacency.query22;
 
+import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
 import org.openjdk.jmh.annotations.*;
@@ -11,8 +11,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.Map;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.logging.Level.INFO;
@@ -25,7 +24,7 @@ import static java.util.logging.Level.INFO;
 @Measurement(iterations = 10)
 public class IS3NoIndexPersonId extends BenchmarkTemplate {
 
-    private long[] personIds;
+    private List<Long> personIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -38,31 +37,19 @@ public class IS3NoIndexPersonId extends BenchmarkTemplate {
 
     @Setup(Level.Trial)
     public void prepare() {
-        var transaction = driver.session().beginTransaction();
-        personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
-                .stream().mapToLong(value -> value.get("personId").asLong()).toArray();
-        transaction.commit();
-        transaction.close();
+        personIds = getPersonIds();
 
         //Calculate DB Hits avg
-        long dbHits = 0;
-        for(var i = 0; i < 100; i++) {
-            transaction = driver.session().beginTransaction();
-            dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_22,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]))
-                    .consume().profile());
-            transaction.commit();
-            transaction.close();
-        }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
+        LOGGER.log(INFO, "DBHITS: {0}",
+                profileDbHits(Queries.QUERY_22, 100,
+                        new Pair<>(ParameterConstants.PERSON_ID, personIds)));
     }
 
     @Benchmark
     public void query22() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_22,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
+                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size()))));
             return result.list();
         });
     }

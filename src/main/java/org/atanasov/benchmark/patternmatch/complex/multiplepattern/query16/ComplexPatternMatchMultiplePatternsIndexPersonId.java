@@ -1,4 +1,4 @@
-package org.atanasov.benchmark.adjacency.query22;
+package org.atanasov.benchmark.patternmatch.complex.multiplepattern.query16;
 
 import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
@@ -22,13 +22,13 @@ import static java.util.logging.Level.INFO;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class IS3UniqueConstraintPersonId extends BenchmarkTemplate {
+public class ComplexPatternMatchMultiplePatternsIndexPersonId extends BenchmarkTemplate {
 
     private List<Long> personIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(IS3UniqueConstraintPersonId.class.getSimpleName())
+                .include(ComplexPatternMatchMultiplePatternsIndexPersonId.class.getSimpleName())
                 .forks(1)
                 .build();
 
@@ -48,17 +48,8 @@ public class IS3UniqueConstraintPersonId extends BenchmarkTemplate {
 
         //Calculate DB Hits avg
         LOGGER.log(INFO, "DBHITS: {0}",
-                profileDbHits(Queries.QUERY_22, 100,
+                profileDbHits(Queries.QUERY_16, 100,
                         new Pair<>(ParameterConstants.PERSON_ID, personIds)));
-    }
-
-    @Benchmark
-    public void query22() {
-        driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_22,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size()))));
-            return result.list();
-        });
     }
 
     @TearDown(Level.Trial)
@@ -67,5 +58,14 @@ public class IS3UniqueConstraintPersonId extends BenchmarkTemplate {
         transaction.run("DROP CONSTRAINT person_id").consume();
         transaction.commit();
         transaction.close();
+    }
+
+    @Benchmark
+    public void query16IndexPersonId() {
+        driver.session().readTransaction(transaction -> {
+            var result = transaction.run(Queries.QUERY_16,
+                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size()))));
+            return result.consume();
+        });
     }
 }

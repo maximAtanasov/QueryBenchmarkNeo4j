@@ -1,12 +1,9 @@
-package org.atanasov.benchmark.patternmatch.complex.multiplepattern;
+package org.atanasov.benchmark.patternmatch.complex.multiplepattern.query16;
 
+import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
-import org.atanasov.benchmark.BenchmarkUtil;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.neo4j.driver.Transaction;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
@@ -15,7 +12,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Collections;
-import java.util.Random;
+import java.util.List;
 import java.util.concurrent.TimeUnit;
 
 import static java.util.logging.Level.INFO;
@@ -28,7 +25,7 @@ import static java.util.logging.Level.INFO;
 @Measurement(iterations = 10)
 public class ComplexPatternMatchMultiplePatternsNoIndex extends BenchmarkTemplate {
 
-    private long[] personIds;
+    private List<Long> personIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
@@ -41,32 +38,19 @@ public class ComplexPatternMatchMultiplePatternsNoIndex extends BenchmarkTemplat
 
     @Setup(Level.Trial)
     public void prepare() {
-        Transaction transaction = driver.session().beginTransaction();
-        personIds = transaction.run("MATCH (p:Person) RETURN p.id as personId")
-                .stream().mapToLong(value -> value.get("personId").asLong()).toArray();
-        transaction.commit();
-        transaction.close();
+        personIds = getPersonIds();
 
         //Calculate DB Hits avg
-        long dbHits = 0;
-        for(var i = 0; i < 100; i++) {
-            transaction = driver.session().beginTransaction();
-            long personId = personIds[r.nextInt(personIds.length)];
-            dbHits += BenchmarkUtil.sumDbHits(transaction.run(
-                    "PROFILE " + Queries.QUERY_16,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personId))
-                    .consume().profile());
-            transaction.commit();
-            transaction.close();
-        }
-        LOGGER.log(INFO, "\nDBHITS: {0}", dbHits/100);
+        LOGGER.log(INFO, "DBHITS: {0}",
+                profileDbHits(Queries.QUERY_16, 100,
+                        new Pair<>(ParameterConstants.PERSON_ID, personIds)));
     }
 
     @Benchmark
-    public void query13Index() {
+    public void query16Index() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_16,
-                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds[r.nextInt(personIds.length)]));
+                    Collections.singletonMap(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size()))));
             return result.consume();
         });
     }
