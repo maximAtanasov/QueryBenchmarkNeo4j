@@ -31,7 +31,7 @@ public class BasicPatternMatchEdgeNoIndexClassYear extends BenchmarkTemplate {
 
     //Avg db hits: 1106843 - calculated manually is Neo4jBrowser and incrementing classYear from 1990 to 2020 in intervals of 5
     @Benchmark
-    public void query4() {
+    public void query4Index() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_4,
                     Collections.singletonMap(ParameterConstants.CLASS_YEAR, 1990 + r.nextInt(30)));

@@ -24,8 +24,7 @@ import static java.util.logging.Level.INFO;
 @Measurement(iterations = 10)
 public class BasicPatternMatchNoIndexPersonId extends BenchmarkTemplate {
 
-    private List<Long>
-            personIds;
+    private List<Long> personIds;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()

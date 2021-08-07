@@ -62,7 +62,7 @@ public class VariableLengthPathBenchmarkIndex extends BenchmarkTemplate {
     }
 
     @Benchmark
-    public void variableLengthQuery() {
+    public void query28Index() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(QUERY_28,
                     Collections.singletonMap(ParameterConstants.PERSON_ID,

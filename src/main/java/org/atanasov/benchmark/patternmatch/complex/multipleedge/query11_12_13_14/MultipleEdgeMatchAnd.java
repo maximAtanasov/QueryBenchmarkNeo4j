@@ -33,7 +33,7 @@ public class MultipleEdgeMatchAnd {
     }
 
     @Benchmark
-    public void query8() {
+    public void query11() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_11);
             return result.list();
@@ -41,7 +41,7 @@ public class MultipleEdgeMatchAnd {
     }
 
     @Benchmark
-    public void query9() {
+    public void query12() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_12);
             return result.list();
@@ -49,7 +49,7 @@ public class MultipleEdgeMatchAnd {
     }
 
     @Benchmark
-    public void query10() {
+    public void query13() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_13);
             return result.list();
@@ -57,7 +57,7 @@ public class MultipleEdgeMatchAnd {
     }
 
     @Benchmark
-    public void query11() {
+    public void query14() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_14);
             return result.list();

@@ -71,7 +71,7 @@ public class ComplexPatternMatchMultiplePatternsIndexPersonIdMessageContentNativ
     }
 
     @Benchmark
-    public void query13IndexPersonIdMessageContentNative() {
+    public void query16IndexPersonIdMessageContentNative() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_16,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size()))));

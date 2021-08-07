@@ -55,7 +55,7 @@ public class BasicNodeAdjacencyCheckIndexPersonId extends BenchmarkTemplate {
     }
 
     @Benchmark
-    public void query20Index() {
+    public void query19Index() {
         Map<String, Object> params = new HashMap<>();
         params.put(ParameterConstants.PERSON_ID_1, personIds.get(r.nextInt(personIds.size())));
         params.put(ParameterConstants.PERSON_ID_2, personIds.get(r.nextInt(personIds.size())));

@@ -53,7 +53,7 @@ public class IS3UniqueConstraintPersonId extends BenchmarkTemplate {
     }
 
     @Benchmark
-    public void query22() {
+    public void query22UniqueConstraint() {
         driver.session().readTransaction(transaction -> {
             var result = transaction.run(Queries.QUERY_22,
                     Collections.singletonMap(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size()))));
