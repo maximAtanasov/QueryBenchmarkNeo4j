@@ -54,5 +54,88 @@ public class Queries {
             "r.creationDate AS friendshipCreationDate " +
             "ORDER BY friendshipCreationDate DESC, personId ASC";
 
+
+    public static final String QUERY_25 = "MATCH (p1:Person {id: $personId})-[:KNOWS*4]->(p2:Person) RETURN DISTINCT p2";
+    public static final String QUERY_25_3 = "MATCH (p1:Person {id: $personId})-[:KNOWS]->(:Person)-[:KNOWS]->(:Person)" +
+            "-[:KNOWS]->(:Person)-[:KNOWS]->(p3:Person) " +
+            "RETURN DISTINCT p3";
+
+    public static final String QUERY_26 =
+            "MATCH (person:Person {id: $personId})-[:KNOWS*2..2]-(friend:Person)-[:IS_LOCATED_IN]->(city:City) " +
+            "WHERE " +
+            "((friend.birthday.month = $month AND friend.birthday.day >= 21) OR " +
+            "(friend.birthday.month = $month % 12 + 1 AND friend.birthday.day < 22)) " +
+            "AND friend <> person " +
+            "AND NOT (friend)-[:KNOWS]-(person) " +
+            "WITH DISTINCT friend, city, person " +
+            "OPTIONAL MATCH (friend)<-[:HAS_CREATOR]-(post:Post) " +
+            "WITH friend, city, collect(post) AS posts, person " +
+            "WITH " +
+            "friend," +
+            "city," +
+            "size(posts) AS postCount," +
+            "size([p IN posts WHERE (p)-[:HAS_TAG]->(:Tag)<-[:HAS_INTEREST]-(person)]) AS commonPostCount " +
+            "RETURN " +
+            "friend.id AS personId, " +
+            "friend.firstName AS personFirstName, " +
+            "friend.lastName AS personLastName, " +
+            "commonPostCount - (postCount - commonPostCount) AS commonInterestScore, " +
+            "friend.gender AS personGender, " +
+            "city.name AS personCityName " +
+            "ORDER BY commonInterestScore DESC, personId ASC " +
+            "LIMIT 10";
+
+    public static final String QUERY_26_MANUAL_EXPANSION =
+            "MATCH (person:Person {id: $personId})-[:KNOWS]-(:Person)-[:KNOWS]-(friend:Person)-[:IS_LOCATED_IN]->(city:City) " +
+            "WHERE " +
+            "((friend.birthday.month = $month AND friend.birthday.day >= 21) OR " +
+            "(friend.birthday.month = $month % 12 + 1 AND friend.birthday.day < 22)) " +
+            "AND friend <> person " +
+            "AND NOT (friend)-[:KNOWS]-(person) " +
+            "WITH DISTINCT friend, city, person " +
+            "OPTIONAL MATCH (friend)<-[:HAS_CREATOR]-(post:Post) " +
+            "WITH friend, city, collect(post) AS posts, person " +
+            "WITH " +
+            "friend," +
+            "city," +
+            "size(posts) AS postCount," +
+            "size([p IN posts WHERE (p)-[:HAS_TAG]->(:Tag)<-[:HAS_INTEREST]-(person)]) AS commonPostCount " +
+            "RETURN " +
+            "friend.id AS personId, " +
+            "friend.firstName AS personFirstName, " +
+            "friend.lastName AS personLastName, " +
+            "commonPostCount - (postCount - commonPostCount) AS commonInterestScore, " +
+            "friend.gender AS personGender, " +
+            "city.name AS personCityName " +
+            "ORDER BY commonInterestScore DESC, personId ASC " +
+            "LIMIT 10";
+
+    public static final String QUERY_27 =
+            "MATCH (:Person {id: $personId})-[:KNOWS]-(friend:Person)<-[:HAS_CREATOR]-(message:Message) " +
+            "WHERE message.creationDate < $maxDate " +
+            "RETURN " +
+            "friend.id AS personId, " +
+            "friend.firstName AS personFirstName, " +
+            "friend.lastName AS personLastName, " +
+            "message.id AS messageId, " +
+            "coalesce(message.content, message.imageFile) AS messageContent, " +
+            "message.creationDate AS messageCreationDate " +
+            "ORDER BY messageCreationDate DESC, messageId ASC " +
+            "LIMIT 20";
+
+    public static final String QUERY_27_USING_INDEX =
+            "MATCH (:Person {id: $personId})-[:KNOWS]-(friend:Person)<-[:HAS_CREATOR]-(message:Message) USING INDEX message:Message(creationDate) " +
+                    "WHERE message.creationDate < $maxDate " +
+                    "RETURN " +
+                    "friend.id AS personId, " +
+                    "friend.firstName AS personFirstName, " +
+                    "friend.lastName AS personLastName, " +
+                    "message.id AS messageId, " +
+                    "coalesce(message.content, message.imageFile) AS messageContent, " +
+                    "message.creationDate AS messageCreationDate " +
+                    "ORDER BY messageCreationDate DESC, messageId ASC " +
+                    "LIMIT 20";
+
+
     public static final String QUERY_28 = "MATCH (p1:Person {id: $personId})-[:KNOWS*4..7]->(p2:Person) RETURN DISTINCT p2";
 }
