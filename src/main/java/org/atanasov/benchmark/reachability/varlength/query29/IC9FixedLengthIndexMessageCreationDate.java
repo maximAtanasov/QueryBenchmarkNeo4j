@@ -1,4 +1,4 @@
-package org.atanasov.benchmark.reachability.fixedlength.query27;
+package org.atanasov.benchmark.reachability.varlength.query29;
 
 import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
@@ -25,14 +25,14 @@ import static java.util.logging.Level.INFO;
 @Fork(value = 1, jvmArgs = {"-Xms3G", "-Xmx3G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class IC2FixedLengthIndexMessageCreationDate extends BenchmarkTemplate {
+public class IC9FixedLengthIndexMessageCreationDate extends BenchmarkTemplate {
 
     private List<Long> personIds;
     private List<ZonedDateTime> dates;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(IC2FixedLengthIndexMessageCreationDate.class.getSimpleName())
+                .include(IC9FixedLengthIndexMessageCreationDate.class.getSimpleName())
                 .forks(1)
                 .build();
 
@@ -58,22 +58,19 @@ public class IC2FixedLengthIndexMessageCreationDate extends BenchmarkTemplate {
 
         //Calculate DB Hits avg
         LOGGER.log(INFO, "DBHITS: {0}",
-                profileDbHits(Queries.QUERY_27, 10,
+                profileDbHits(Queries.QUERY_29, 5,
                         new Pair<>(ParameterConstants.PERSON_ID, personIds),
                         new Pair<>(ParameterConstants.MAX_DATE, dates)));
     }
 
-    /**
-     * TODO: Rerun and check results
-     */
     @Benchmark
-    public void query27IndexMessageCreationDate() {
+    public void query29IndexMessageCreationDate() {
         Map<String, Object> params = new HashMap<>();
         params.put(ParameterConstants.PERSON_ID, personIds.get(r.nextInt(personIds.size())));
         params.put(ParameterConstants.MAX_DATE, dates.get(r.nextInt(dates.size())));
 
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_27, params);
+            var result = transaction.run(Queries.QUERY_29, params);
             return result.list();
         });
     }

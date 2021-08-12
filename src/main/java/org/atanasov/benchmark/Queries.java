@@ -4,29 +4,40 @@ public class Queries {
     private Queries() {}
 
     public static final String QUERY_1 = "MATCH (u:Person) WHERE u.id = $personId RETURN u LIMIT 1";
+
     public static final String QUERY_2 = "MATCH (u:Person) WHERE u.firstName = $firstName RETURN u";
+
     public static final String QUERY_3 = "MATCH (m:Message {id: $messageId}) " +
             "RETURN m.creationDate AS messageCreationDate, " +
             "coalesce(m.content, m.imageFile) AS messageContent";
+
     public static final String QUERY_4 = "MATCH (p)-[r:STUDY_AT]->() WHERE r.classYear > $classYear RETURN DISTINCT p";
+
     public static final String QUERY_9 = "MATCH (p)-[r:WORK_AT|STUDY_AT]->() RETURN DISTINCT p";
+
     public static final String QUERY_10 = "MATCH (p)-[r:WORK_AT]->() RETURN p " +
                                         "UNION " +
                                         "MATCH (p)-[:STUDY_AT]->() RETURN p";
     public static final String QUERY_11 = "MATCH ()<-[:WORK_AT]-(p:Person)-[:STUDY_AT]->() RETURN p";
+
     public static final String QUERY_12 = "MATCH ()<-[r1:WORK_AT]-(p:Person)-[r2:STUDY_AT]->() " +
             "USING SCAN r1:WORK_AT " +
             "USING SCAN r2:STUDY_AT " +
             "RETURN p";
+
     public static final String QUERY_13 = "MATCH ()<-[r1:WORK_AT]-(p:Person)-[:STUDY_AT]->() " +
             "USING SCAN r1:WORK_AT " +
             "RETURN p";
+
     public static final String QUERY_14 = "MATCH ()<-[:WORK_AT]-(p:Person)-[r1:STUDY_AT]->() " +
             "USING SCAN r1:STUDY_AT " +
             "RETURN p";
-    public static final String QUERY_16 = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 " +
-                                        "MATCH (m:Message) WHERE m.content CONTAINS p.firstName " +
-                                        "RETURN p, collect(m) AS messages";
+
+    public static final String QUERY_16 =
+            "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 " +
+            "MATCH (m:Message) WHERE m.content CONTAINS p.firstName " +
+            "RETURN p, collect(m) AS messages";
+
     public static final String QUERY_16_2 = "MATCH (p:Person {id: $personId}) WITH p LIMIT 1 " +
             "CALL db.index.fulltext.queryNodes('message_content', '*'+p.firstName+'*') " +
             "YIELD node AS m RETURN p, collect(m) AS messages";
@@ -54,8 +65,8 @@ public class Queries {
             "r.creationDate AS friendshipCreationDate " +
             "ORDER BY friendshipCreationDate DESC, personId ASC";
 
-
     public static final String QUERY_25 = "MATCH (p1:Person {id: $personId})-[:KNOWS*4]->(p2:Person) RETURN DISTINCT p2";
+
     public static final String QUERY_25_3 = "MATCH (p1:Person {id: $personId})-[:KNOWS]->(:Person)-[:KNOWS]->(:Person)" +
             "-[:KNOWS]->(:Person)-[:KNOWS]->(p3:Person) " +
             "RETURN DISTINCT p3";
@@ -125,17 +136,42 @@ public class Queries {
 
     public static final String QUERY_27_USING_INDEX =
             "MATCH (:Person {id: $personId})-[:KNOWS]-(friend:Person)<-[:HAS_CREATOR]-(message:Message) USING INDEX message:Message(creationDate) " +
-                    "WHERE message.creationDate < $maxDate " +
-                    "RETURN " +
-                    "friend.id AS personId, " +
-                    "friend.firstName AS personFirstName, " +
-                    "friend.lastName AS personLastName, " +
-                    "message.id AS messageId, " +
-                    "coalesce(message.content, message.imageFile) AS messageContent, " +
-                    "message.creationDate AS messageCreationDate " +
-                    "ORDER BY messageCreationDate DESC, messageId ASC " +
-                    "LIMIT 20";
+            "WHERE message.creationDate < $maxDate " +
+            "RETURN " +
+            "friend.id AS personId, " +
+            "friend.firstName AS personFirstName, " +
+            "friend.lastName AS personLastName, " +
+            "message.id AS messageId, " +
+            "coalesce(message.content, message.imageFile) AS messageContent, " +
+            "message.creationDate AS messageCreationDate " +
+            "ORDER BY messageCreationDate DESC, messageId ASC " +
+            "LIMIT 20";
 
+    public static final String QUERY_29 = "MATCH " +
+            "(:Person {id: $personId})-[:KNOWS*1..2]-(otherPerson:Person)<-[:HAS_CREATOR]-(message:Message) " +
+            "WHERE message.creationDate < $maxDate " +
+            "RETURN DISTINCT " +
+            "otherPerson.id AS otherPersonId, " +
+            "otherPerson.firstName AS otherPersonFirstName, " +
+            "otherPerson.lastName AS otherPersonLastName, " +
+            "message.id AS messageId, " +
+            "coalesce(message.content, message.imageFile) AS messageContent, " +
+            "message.creationDate AS messageCreationDate " +
+            "ORDER BY message.creationDate DESC, message.id ASC " +
+            "LIMIT 20";
 
-    public static final String QUERY_28 = "MATCH (p1:Person {id: $personId})-[:KNOWS*4..7]->(p2:Person) RETURN DISTINCT p2";
+    public static final String QUERY_29_USING_INDEX = "MATCH " +
+            "(p:Person {id: $personId})-[:KNOWS*1..2]-(otherPerson:Person)<-[:HAS_CREATOR]-(message:Message) " +
+            "USING INDEX p:Person(id) " +
+            "USING INDEX message:Message(creationDate) " +
+            "WHERE message.creationDate < $maxDate " +
+            "RETURN DISTINCT " +
+            "otherPerson.id AS otherPersonId, " +
+            "otherPerson.firstName AS otherPersonFirstName, " +
+            "otherPerson.lastName AS otherPersonLastName, " +
+            "message.id AS messageId, " +
+            "coalesce(message.content, message.imageFile) AS messageContent, " +
+            "message.creationDate AS messageCreationDate " +
+            "ORDER BY message.creationDate DESC, message.id ASC " +
+            "LIMIT 20";
 }

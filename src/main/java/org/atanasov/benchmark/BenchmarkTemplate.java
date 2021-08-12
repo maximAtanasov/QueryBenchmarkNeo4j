@@ -15,7 +15,7 @@ public class BenchmarkTemplate {
     protected static final Logger LOGGER = Logger.getLogger(BenchmarkTemplate.class.getName());
 
     protected final Driver driver= GraphDatabase.driver( "bolt://localhost", AuthTokens.basic( "neo4j", "neo3j" ) );
-    protected final Random r = new Random();
+    protected final Random r = new Random(1L);
 
     protected void awaitIndexes() {
         var transaction = driver.session().beginTransaction();
