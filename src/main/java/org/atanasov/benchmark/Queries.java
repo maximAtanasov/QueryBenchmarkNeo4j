@@ -67,9 +67,10 @@ public class Queries {
 
     public static final String QUERY_25 = "MATCH (p1:Person {id: $personId})-[:KNOWS*4]->(p2:Person) RETURN DISTINCT p2";
 
-    public static final String QUERY_25_3 = "MATCH (p1:Person {id: $personId})-[:KNOWS]->(:Person)-[:KNOWS]->(:Person)" +
-            "-[:KNOWS]->(:Person)-[:KNOWS]->(p3:Person) " +
-            "RETURN DISTINCT p3";
+    //k = 3
+    public static final String QUERY_25_3 = "MATCH (p1:Person {id: $personId})-[:KNOWS]->()-[:KNOWS]->()" +
+            "-[:KNOWS]->(p2:Person) " +
+            "RETURN DISTINCT p2";
 
     public static final String QUERY_26 =
             "MATCH (person:Person {id: $personId})-[:KNOWS*2..2]-(friend:Person)-[:IS_LOCATED_IN]->(city:City) " +
@@ -174,4 +175,13 @@ public class Queries {
             "message.creationDate AS messageCreationDate " +
             "ORDER BY message.creationDate DESC, message.id ASC " +
             "LIMIT 20";
+
+
+    public static final String QUERY_34 = "MATCH (person1:Person {id: $personId1}), (person2:Person {id: $personId2}) " +
+            "OPTIONAL MATCH path = shortestPath((person1)-[:KNOWS*]-(person2)) " +
+            "RETURN " +
+            "CASE path IS NULL " +
+            "  WHEN true THEN -1 " +
+            "  ELSE length(path) " +
+            "END AS shortestPathLength";
 }
