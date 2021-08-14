@@ -184,4 +184,18 @@ public class Queries {
             "  WHEN true THEN -1 " +
             "  ELSE length(path) " +
             "END AS shortestPathLength";
+
+    public static final String QUERY_38 = "MATCH (m:Message) RETURN min(m.length)";
+
+    public static final String QUERY_38_2 = "MATCH (m:Message) RETURN max(m.length)";
+
+    public static final String QUERY_39 = "MATCH (m:Message) RETURN avg(m.length)";
+
+    public static final String QUERY_40 =
+            "MATCH (n:Person) WITH avg(n.birthday.year) as avgYear " +
+            "RETURN date.truncate('year').year - avgYear";
+
+    public static final String QUERY_40_2 =
+            "MATCH (n:Person) WITH avg(n.birthYear) as avgYear " +
+                    "RETURN date.truncate('year').year - avgYear";
 }
