@@ -13,6 +13,10 @@ public class Queries {
 
     public static final String QUERY_4 = "MATCH (p)-[r:STUDY_AT]->() WHERE r.classYear > $classYear RETURN DISTINCT p";
 
+    public static final String QUERY_6 = "MATCH (c:City:Country) WHERE c.name = $name AND c.url = $url RETURN c";
+    public static final String QUERY_8 =
+            "MATCH (c) WHERE ((c:City) OR (c:Country)) AND c.name = $name AND c.url = $url RETURN c";
+
     public static final String QUERY_9 = "MATCH (p)-[r:WORK_AT|STUDY_AT]->() RETURN DISTINCT p";
 
     public static final String QUERY_10 = "MATCH (p)-[r:WORK_AT]->() RETURN p " +
@@ -56,6 +60,14 @@ public class Queries {
 
     public static final String QUERY_20_2 = "MATCH ()-[r1:LIKES {creationDate: $date1}]-(n) USING SCAN r1:LIKES WITH r1 LIMIT 1 " +
             "MATCH ()-[r2:LIKES {creationDate: $date2}]-(n) USING SCAN r2:LIKES WITH n LIMIT 1 RETURN COUNT (n) > 0";
+
+    public static final String QUERY_21 = "MATCH (p1:Person {id: $personId})-[r:KNOWS*1..10]->(p2:Person) RETURN DISTINCT p2";
+
+    public static final String QUERY_21_2 = "MATCH (p:Person {id: $personId}) " +
+            "CALL apoc.path.subgraphNodes(p, { " +
+            "relationshipFilter: \"KNOWS>\", minLevel: 1, maxLevel: 10 " +
+            "}) " +
+            "YIELD node RETURN node";
 
     public static final String QUERY_22 = "MATCH (n:Person {id: $personId})-[r:KNOWS]-(friend) " +
             "RETURN " +
@@ -198,4 +210,7 @@ public class Queries {
     public static final String QUERY_40_2 =
             "MATCH (n:Person) WITH avg(n.birthYear) as avgYear " +
                     "RETURN date.truncate('year').year - avgYear";
+
+    public static final String QUERY_48 = "MATCH (m:Message) RETURN sum(m.length)";
+
 }

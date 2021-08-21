@@ -1,6 +1,7 @@
 package org.atanasov.benchmark;
 
 public class ParameterConstants {
+
     private ParameterConstants() {}
 
     public static final String PERSON_ID = "personId";
@@ -13,5 +14,6 @@ public class ParameterConstants {
     public static final String DATE_2 = "date2";
     public static final String MAX_DATE = "maxDate";
     public static final String MONTH = "month";
-
+    public static final String NAME = "name";
+    public static final String URL = "url";
 }
