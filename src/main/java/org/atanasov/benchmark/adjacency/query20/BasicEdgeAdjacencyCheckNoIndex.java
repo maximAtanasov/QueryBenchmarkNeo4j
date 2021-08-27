@@ -52,7 +52,7 @@ public class BasicEdgeAdjacencyCheckNoIndex extends BenchmarkTemplate {
 
         //Calculate DB Hits avg
         LOGGER.log(INFO, "DBHITS: {0}",
-                profileDbHits(Queries.QUERY_20, 100,
+                profileDbHits(Queries.QUERY_20, 5,
                         new Pair<>(ParameterConstants.DATE_1, dates),
                         new Pair<>(ParameterConstants.DATE_2, dates)));
     }

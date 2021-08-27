@@ -26,13 +26,13 @@ import static java.util.logging.Level.INFO;
 @Fork(value = 1, jvmArgs = {"-Xms8G", "-Xmx8G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class BasicEdgeAdjacencyCheckRelationshipTLP extends BenchmarkTemplate {
+public class BasicEdgeAdjacencyCheckIndex2 extends BenchmarkTemplate {
 
     private List<ZonedDateTime> dates;
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()
-                .include(BasicEdgeAdjacencyCheckRelationshipTLP.class.getSimpleName())
+                .include(BasicEdgeAdjacencyCheckIndex2.class.getSimpleName())
                 .forks(1)
                 .build();
 
@@ -42,6 +42,11 @@ public class BasicEdgeAdjacencyCheckRelationshipTLP extends BenchmarkTemplate {
     @Setup(Level.Trial)
     public void prepare() {
         var transaction = driver.session().beginTransaction();
+        transaction.run("CREATE INDEX like_creation_date FOR ()-[r:LIKES]-() ON (r.creationDate)").consume();
+        transaction.commit();
+        transaction.close();
+
+        transaction = driver.session().beginTransaction();
         dates = transaction.run("MATCH ()-[r:LIKES]-() RETURN r.creationDate as creationDate")
                 .stream().map(value -> value.get("creationDate").asZonedDateTime()).collect(Collectors.toList());
         transaction.commit();
@@ -50,22 +55,32 @@ public class BasicEdgeAdjacencyCheckRelationshipTLP extends BenchmarkTemplate {
         //Use an array list to ensure access time with get() is constant
         dates = new ArrayList<>(dates);
 
+        awaitIndexes();
+
         //Calculate DB Hits avg
-        LOGGER.log(INFO, "DBHITS: {0}",
-                profileDbHits(Queries.QUERY_20_2, 5,
+        LOGGER.log(INFO, "QUERY 20.3 DBHITS: {0}",
+                profileDbHits(Queries.QUERY_20_3, 5,
                         new Pair<>(ParameterConstants.DATE_1, dates),
                         new Pair<>(ParameterConstants.DATE_2, dates)));
     }
 
     @Benchmark
-    public void query20Tlp() {
+    public void query20_3Index() {
         Map<String, Object> params = new HashMap<>();
         params.put(ParameterConstants.DATE_1, dates.get(r.nextInt(dates.size())));
         params.put(ParameterConstants.DATE_2, dates.get(r.nextInt(dates.size())));
 
         driver.session().readTransaction(transaction -> {
-            var result = transaction.run(Queries.QUERY_20_2, params);
+            var result = transaction.run(Queries.QUERY_20_3, params);
             return result.single();
         });
+    }
+
+    @TearDown(Level.Trial)
+    public void tearDown() {
+        var transaction = driver.session().beginTransaction();
+        transaction.run("DROP INDEX like_creation_date").consume();
+        transaction.commit();
+        transaction.close();
     }
 }

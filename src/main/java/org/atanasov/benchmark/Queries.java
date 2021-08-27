@@ -55,11 +55,17 @@ public class Queries {
     public static final String QUERY_19_3 = "MATCH (p:Person {id: $personId})-[:LIKES]->(m:Message {id:$messageId}) USING INDEX p:Person(id) " +
             "RETURN COUNT(*) > 0";
 
-    public static final String QUERY_20 = "MATCH ()-[r1:LIKES {creationDate: $date1}]-(n) WITH r1 LIMIT 1 " +
-            "MATCH ()-[r2:LIKES {creationDate: $date2}]-(n) WITH n LIMIT 1 RETURN COUNT (n) > 0";
+    public static final String QUERY_20 = "MATCH ()-[r1:LIKES {creationDate: $date1}]-(n)-[:LIKES {creationDate: $date2}]-() WITH n LIMIT 1 " +
+            "RETURN COUNT (n) > 0";
 
-    public static final String QUERY_20_2 = "MATCH ()-[r1:LIKES {creationDate: $date1}]-(n) USING SCAN r1:LIKES WITH r1 LIMIT 1 " +
-            "MATCH ()-[r2:LIKES {creationDate: $date2}]-(n) USING SCAN r2:LIKES WITH n LIMIT 1 RETURN COUNT (n) > 0";
+    public static final String QUERY_20_2 = "MATCH ()-[r1:LIKES {creationDate: $date1}]-(n)-[r2:LIKES {creationDate: $date2}]-() " +
+            "USING SCAN r1:LIKES WITH n LIMIT 1 " +
+            "RETURN COUNT (n) > 0";
+
+    public static final String QUERY_20_3 = "MATCH ()-[r1:LIKES {creationDate: $date1}]-(n)-[r2:LIKES {creationDate: $date2}]-() " +
+            "USING INDEX r1:LIKES(creationDate) " +
+            "USING INDEX r2:LIKES(creationDate) WITH n LIMIT 1 " +
+            "RETURN COUNT (n) > 0";
 
     public static final String QUERY_21 = "MATCH (p1:Person {id: $personId})-[r:KNOWS*1..10]->(p2:Person) RETURN DISTINCT p2";
 

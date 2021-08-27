@@ -58,8 +58,8 @@ public class BasicEdgeAdjacencyCheckIndex extends BenchmarkTemplate {
         awaitIndexes();
 
         //Calculate DB Hits avg
-        LOGGER.log(INFO, "DBHITS: {0}",
-                profileDbHits(Queries.QUERY_20, 100,
+        LOGGER.log(INFO, "QUERY 20 DBHITS: {0}",
+                profileDbHits(Queries.QUERY_20, 5,
                         new Pair<>(ParameterConstants.DATE_1, dates),
                         new Pair<>(ParameterConstants.DATE_2, dates)));
     }
@@ -75,6 +75,7 @@ public class BasicEdgeAdjacencyCheckIndex extends BenchmarkTemplate {
             return result.single();
         });
     }
+
 
     @TearDown(Level.Trial)
     public void tearDown() {
