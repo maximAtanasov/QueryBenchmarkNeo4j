@@ -1,9 +1,7 @@
 package org.atanasov.benchmark.patternmatch.complex.multipleedge.query11_12_13_14;
 
+import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.Queries;
-import org.neo4j.driver.AuthTokens;
-import org.neo4j.driver.Driver;
-import org.neo4j.driver.GraphDatabase;
 import org.openjdk.jmh.annotations.*;
 import org.openjdk.jmh.runner.Runner;
 import org.openjdk.jmh.runner.RunnerException;
@@ -18,10 +16,7 @@ import java.util.concurrent.TimeUnit;
 @Fork(value = 1, jvmArgs = {"-Xms2G", "-Xmx2G"})
 @Warmup(iterations = 3)
 @Measurement(iterations = 10)
-public class MultipleEdgeMatchAnd {
-
-    private final Driver driver = GraphDatabase.driver(
-            "bolt://localhost", AuthTokens.basic("neo4j", "neo3j"));
+public class MultipleEdgeMatchAnd extends BenchmarkTemplate {
 
     public static void main(String[] args) throws RunnerException {
         Options opt = new OptionsBuilder()

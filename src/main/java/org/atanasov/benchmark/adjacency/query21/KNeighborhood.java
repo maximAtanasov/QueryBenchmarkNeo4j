@@ -1,6 +1,5 @@
 package org.atanasov.benchmark.adjacency.query21;
 
-import org.apache.commons.math3.util.Pair;
 import org.atanasov.benchmark.BenchmarkTemplate;
 import org.atanasov.benchmark.ParameterConstants;
 import org.atanasov.benchmark.Queries;
@@ -11,12 +10,7 @@ import org.openjdk.jmh.runner.options.Options;
 import org.openjdk.jmh.runner.options.OptionsBuilder;
 
 import java.util.Collections;
-import java.util.HashMap;
-import java.util.List;
-import java.util.Map;
 import java.util.concurrent.TimeUnit;
-
-import static java.util.logging.Level.INFO;
 
 @BenchmarkMode(Mode.AverageTime)
 @OutputTimeUnit(TimeUnit.MILLISECONDS)
